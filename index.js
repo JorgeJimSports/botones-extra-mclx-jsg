@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Botones mecalux
 // @namespace    http://tampermonkey.net/
-// @version      0.2
+// @version      1.0
 // @description  botones extra mecalux
 // @author       Jorge Serrano
 // @match        https://*/SmartUI/*
@@ -15,7 +15,6 @@
 
 (function () {
     'use strict';
-    // test update
     const moves = [
         { page: "Stock", segundos_espera: 5000, filter: false, history: false },
         { page: 'Ubicaciones', segundos_espera: 5000, filter: false, history: false },
