@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Botones mecalux
 // @namespace    http://tampermonkey.net/
-// @version      0.1
+// @version      0.2
 // @description  botones extra mecalux
 // @author       Jorge Serrano
 // @match        https://*/SmartUI/*
