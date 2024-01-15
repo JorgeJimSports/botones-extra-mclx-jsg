@@ -9,10 +9,13 @@
 // @grant        none
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11
 // @unwrap
+// @downloadURL  https://raw.githubusercontent.com/JorgeJimSports/botones-extra-mclx-jsg/main/index.js
+// @updateURL    https://raw.githubusercontent.com/JorgeJimSports/botones-extra-mclx-jsg/main/index.js
 // ==/UserScript==
 
 (function () {
     'use strict';
+    // test update
     const moves = [
         { page: "Stock", segundos_espera: 5000, filter: false, history: false },
         { page: 'Ubicaciones', segundos_espera: 5000, filter: false, history: false },
