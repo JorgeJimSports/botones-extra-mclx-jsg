@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Botones mecalux
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  botones extra mecalux
 // @author       Jorge Serrano
 // @match        https://*/SmartUI/*
@@ -15,7 +15,7 @@
 
 (function () {
     'use strict';
-    // test update
+    
     const moves = [
         { page: "Stock", segundos_espera: 5000, filter: false, history: false },
         { page: 'Ubicaciones', segundos_espera: 5000, filter: false, history: false },
@@ -42,13 +42,55 @@
     let boton_direccion = '<button type="button" class="btn btn-primary jorgedireccion botones-jsg" style="background-color:#323232;" title="direccion"><img src="https://static-00.iconduck.com/assets.00/address-icon-1620x2048-3s4bnjam.png" style="width: 18px;"></button>';
     let boton_export = '<li><button type="button" class="btn btn-primary jorgeexportar" title="exportar"><img src="https://flaticons.net/icon.php?slug_category=application&slug_icon=data-export" style="width: 24px;"></button></li>';
     let checks = ['suma','lineas','tareas','direcciones', 'exportar'];
+    let values_direccion = {
+        nombre: 'contact_name',
+        email: 'contact_email',
+        movil: 'contact_cellphone',
+        telefono: 'contact_phone',
+        pais: 'address_country',
+        provincia: 'address_state',
+        ciudad: 'address_city',
+        codigopostal: 'address_zipcode',
+        direccion: 'address_addressline',
+        complemento: 'address_addressline2'
+    };
     let keysPressed = {};
 
-    function ponerBotones() {
-        setTimeout(function () {            
-            // Llamar a la función manejarEvento en respuesta al evento
-            document.addEventListener('keydown', manejarEvento);
+    /* Intervalo para crear los botones para que aparezcan cada vez que se cambie de pagina */
+    setInterval(function () {
+        if ($('.botones-jsg').length < 1) {
+            ponerBotones();
+        }
+    }, 3000)
 
+    
+    /* Intervalo para eliminar estilos una vez se cambia de dato */
+    setInterval(function () {
+        if (first_result != $('.columnHeader-OutboundOrderCode').eq(1).text()) {
+            $('.pintadas').remove();
+            $('.k-master-row').css('background-color', '');
+            first_result = $('.columnHeader-OutboundOrderCode').eq(1).text();
+        }
+
+        if (first_result_2 != $('.columnHeader-InternalInfo_UpdateDate').eq(1).text()) {
+            $('.columnHeader-InternalInfo_UpdatedBy').find('.None').css('background-color', '');
+            $('.columnHeader-InternalInfo_UpdatedBy').css('background-color', '');
+            first_result_2 = $('.columnHeader-InternalInfo_UpdateDate').eq(1).text();
+        }
+
+        if (first_result_3 != $('#data\\.deliverycontent\\.customattributes_attribute5\\.ca5_otuboundordercode\\.textbox').text()) {
+            remove_direccion_css();
+            first_result_3 = $('#data\\.deliverycontent\\.customattributes_attribute5\\.ca5_otuboundordercode\\.textbox').text();
+        }
+    }, 1000)
+
+    /**
+     * Crear/Mostrar los botones que se han configurado como visibles.
+    */
+    function ponerBotones() {
+        setTimeout(function () {
+            /* Controlar pulsación de 'CTRL + Ñ' para abrir modal de opciones de visualización de los botones */
+            document.addEventListener('keydown', manejarEvento);
             document.addEventListener('keyup', (event) => {
                 delete keysPressed[event.key];
             });
@@ -56,24 +98,27 @@
                 if(getCookie('chck-suma')==='true'){
                     $('.primary-buttons').append(boton_suma)
                     $(".jorgesuma").on("click", function (event) {
-                        check();
+                        checkStock();
                     });
                 }
-
                 if(getCookie('chck-lineas')==='true'){
                     $('.primary-buttons').append(boton_qty_check)
                     $(".jorgeqty_check").on("click", function (event) {
                         check_same_qty();
                     });
                 }
-
                 if(getCookie('chck-tareas')==='true'){
                     $('.primary-buttons').append(boton_tarea_block)
                     $(".jorgeqty_tarea_block").on("click", function (event) {
                         tarea_block();
                     });
                 }
-
+                if(getCookie('chck-direcciones')==='true'){
+                    $('.primary-buttons').append(boton_direccion)
+                    $(".jorgedireccion").on("click", function (event) {
+                        check_direccion();
+                    });            
+                }    
                 if(getCookie('chck-exportar')==='true'){
                     if ($('.jorgeexportar').length < 1) {
                         if ($.trim($('.user-submenu').text()) === 'exportar') {
@@ -85,53 +130,15 @@
                             }, 500)
                         }
                     }
-                }  
-                
-                if(getCookie('chck-direcciones')==='true'){
-                    $('.primary-buttons').append(boton_direccion)
-                    $(".jorgedireccion").on("click", function (event) {
-                        check_direccion();
-                    });            
-                }    
+                }
             }, 500)
-
-            window.addEventListener('popstate', function (event) {
-                $('.primary-buttons').append(boton_suma)
-                $(".jorgesuma").on("click", function (event) {
-                    check();
-                });
-                $('.primary-buttons').append(boton_qty_check)
-                $(".jorgeqty_check").on("click", function (event) {
-                    check_same_qty();
-                });
-            }, 500)
-            setInterval(function () {
-                if (first_result != $('.columnHeader-OutboundOrderCode').eq(1).text()) {
-                    $('.pintadas').remove();
-                    $('.k-master-row').css('background-color', '');
-                    first_result = $('.columnHeader-OutboundOrderCode').eq(1).text();
-                }
-
-                if (first_result_2 != $('.columnHeader-InternalInfo_UpdateDate').eq(1).text()) {
-                    $('.columnHeader-InternalInfo_UpdatedBy').find('.None').css('background-color', '');
-                    $('.columnHeader-InternalInfo_UpdatedBy').css('background-color', '');
-                    first_result_2 = $('.columnHeader-InternalInfo_UpdateDate').eq(1).text();
-                }
-
-                if (first_result_3 != $('#data\\.deliverycontent\\.customattributes_attribute5\\.ca5_otuboundordercode\\.textbox').text()) {
-                    remove_direccion_css();
-                    first_result_3 = $('#data\\.deliverycontent\\.customattributes_attribute5\\.ca5_otuboundordercode\\.textbox').text();
-                }
-            }, 1000)
         }, 500)
-    }
-    setInterval(function () {
-        if ($('.botones-jsg').length < 1) {
-            ponerBotones();
-        }
-    }, 2500)
+    }    
 
-    function check() {
+    /**
+    *  Muestra en un alert (Sweetalert2) la suma de stock de las lineas mostradas en pantalla.
+    */
+    function checkStock() {
         var e = $('.columnHeader-QuantityOrdered').text().split('  ');
         if ($('.columnHeader-QuantityOrdered').length > 0) {
             e = $('.columnHeader-QuantityOrdered').text().split('  ');
@@ -152,6 +159,10 @@
         Swal.fire(String(sum));
     }
 
+    /**
+    *  Comprueba las lineas de orden y pinta de verde las que están totalmente preparadas, 
+    *  en blanco las que no lo están y en rojo las que tienen mas cantidad preparada que pedidas.  
+    */
     function check_same_qty() {
         if ($('.header-left > h2').text() === 'Líneas de órdenes de salida') {
             let i = 0;
@@ -187,6 +198,9 @@
         }
     }
 
+    /**
+    * Comprueba/pinta las tareas que llevan en proceso mas de 30 minutos.
+    */
     function tarea_block() {
         $('.k-master-row').css('background-color', '');
         if ($('.header-left > h2').text() === 'Tareas') {
@@ -230,6 +244,9 @@
         }
     }
 
+    /**
+    * Realiza la exportación de datos con los pasos indicados en el array 'moves'.
+    */
     function startExport() {
         let i = 0;
         let timeout = 0
@@ -266,20 +283,11 @@
         }, 2500);
     }
 
+    /**
+    * Comprueba la dirección del envío marcado y pinta los valores que están bien de verde y de rojo los que están mal.
+    */
     function check_direccion() {
         if ($('.header-left > h2').text() === 'Envíos') {
-            let values = {
-                nombre: 'contact_name',
-                email: 'contact_email',
-                movil: 'contact_cellphone',
-                telefono: 'contact_phone',
-                pais: 'address_country',
-                provincia: 'address_state',
-                ciudad: 'address_city',
-                codigopostal: 'address_zipcode',
-                direccion: 'address_addressline',
-                complemento: 'address_addressline2'
-            };
             // Objeto para almacenar los textos
             let textos = {};
             let selectores = {};
@@ -287,9 +295,9 @@
             
             textos['transportista'] = $('#data\\.deliverycontent\\.carriercode\\.carriercode\\.label').text();
             // Iterar sobre las claves de values
-            for (let key in values) {
+            for (let key in values_direccion) {
                 // Construir el selector jQuery
-                let selector = '#receiver\\.deliverycontent\\.consignee' + values[key] + '\\.' + values[key].split('_')[1] + '\\.textbox';
+                let selector = '#receiver\\.deliverycontent\\.consignee' + values_direccion[key] + '\\.' + values_direccion[key].split('_')[1] + '\\.textbox';
 
                 // Obtener el texto del elemento correspondiente
                 let texto = $(selector).text();
@@ -407,70 +415,70 @@
         }
     }
 
-            /* Al usar CTRL + ñ aparece un modal de configuración */
-            // Definir una función asíncrona para envolver tu código
-            async function manejarEvento(event) {
-                keysPressed[event.key] = true;
-                if (keysPressed['Control'] && event.key == 'ñ') {
-                    let texthtml = '';
-                    for (const key of checks) {
-                        let cookie = (getCookie('chck-'+key)==='true') ? 'checked' : '';
-                        texthtml += '<label>Boton '+key+'</label>';
-                        texthtml += '<input type="checkbox" class="checkbox" id="chck-'+key+'" style="margin-bottom:2rem;" '+cookie+'>';
-                    }
-
-                    const { value: formValues } = await Swal.fire({
-                        title: "Configuracion de botones",
-                        html: texthtml,
-                        focusConfirm: false,
-                        preConfirm: () => {
-                            let data_return = [];
-                            for (const key of checks) {
-                                data_return.push(document.getElementById("chck-"+key).checked);
-                            }
-                            return data_return;
-                        }
-                    });
-                    if (formValues) {
-                        let i = 0;
-                        for (const key of checks) {
-                            setCookie('chck-'+key,formValues[i++],360);
-                        }
-                    }
-                }
+    /**
+    * Abre un modal de opciones de visualización de los botones al pulsar 'CTRL + Ñ'.
+    */
+    async function manejarEvento(event) {
+        keysPressed[event.key] = true;
+        if (keysPressed['Control'] && event.key == 'ñ') {
+            let texthtml = '';
+            for (const key of checks) {
+                let cookie = (getCookie('chck-'+key)==='true') ? 'checked' : '';
+                texthtml += '<label>Boton '+key+'</label>';
+                texthtml += '<input type="checkbox" class="checkbox" id="chck-'+key+'" style="margin-bottom:2rem;" '+cookie+'>';
             }
 
-    
+            const { value: formValues } = await Swal.fire({
+                title: "Configuracion de botones",
+                html: texthtml,
+                focusConfirm: false,
+                preConfirm: () => {
+                    let data_return = [];
+                    for (const key of checks) {
+                        data_return.push(document.getElementById("chck-"+key).checked);
+                    }
+                    return data_return;
+                }
+            });
+            if (formValues) {
+                let i = 0;
+                for (const key of checks) {
+                    setCookie('chck-'+key,formValues[i++],360);
+                }
+            }
+        }
+    }
 
+    /**
+    * Comprueba que una cadena de texto está formada por 2 letras mayusculas.
+    */
     function check_pais(cadena) {
         var expresionRegular = /^[A-Z]{2}$/; // Coincide con exactamente dos letras mayúsculas
     
         return expresionRegular.test(cadena);
     }
 
+    /**
+    * Elimina los estilos añadidos en una direccion de envío.
+    */
     function remove_direccion_css() {
-        let values = {
-            nombre: 'contact_name',
-            email: 'contact_email',
-            movil: 'contact_cellphone',
-            telefono: 'contact_phone',
-            pais: 'address_country',
-            provincia: 'address_state',
-            ciudad: 'address_city',
-            codigopostal: 'address_zipcode',
-            direccion: 'address_addressline',
-            complemento: 'address_addressline2'
-        };
         // Iterar sobre las claves de values
-        for (let key in values) {
+        for (let key in values_direccion) {
             // Construir el selector jQuery
-            let selector = '#receiver\\.deliverycontent\\.consignee' + values[key] + '\\.' + values[key].split('_')[1] + '\\.textbox';
+            let selector = '#receiver\\.deliverycontent\\.consignee' + values_direccion[key] + '\\.' + values_direccion[key].split('_')[1] + '\\.textbox';
 
             // Eliminar estilos
             $(selector).parents('.viewfieldcontent').parent().removeAttr('style');
         }
     }
 
+    /**
+    * Crea una cookie.
+    * 
+    * @param {string} cname El nombre de la cookie.
+    * @param {string} cvalue El valor de la cookie.
+    * @param {number} exdays El numero de días que va a estar activa la cookie.
+    */
     function setCookie(cname, cvalue, exdays) {
         const d = new Date();
         d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
@@ -478,6 +486,12 @@
         document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
     }
 
+    /**
+    * Devuelve el valor de una cookie.
+    * 
+    * @param {string} cname El nombre de la cookie. 
+    * @return {string} Valor de la cookie.
+    */
     function getCookie(cname) {
         let name = cname + "=";
         let ca = document.cookie.split(';');
