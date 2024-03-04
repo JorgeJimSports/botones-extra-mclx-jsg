@@ -16,7 +16,7 @@
     toastr.options = {
         "closeButton": true,
         "debug": false,
-        "newestOnTop": false,
+        "newestOnTop": true,
         "progressBar": true,
         "positionClass": "toast-top-right",
         "preventDuplicates": false,
@@ -189,6 +189,7 @@
                     texthtml += '</div>';
                     Swal.fire({
                         title: "Elige que quieres exportar",
+                        width: '54em',
                         html: texthtml,
                         focusConfirm: false,
                         showCancelButton: true,
@@ -199,16 +200,13 @@
                                     if($('#cbx-'+option).prop('checked')){
                                         selected_export[options] = true;
                                     } else {
-                                        selected_export[options] = false;;
+                                        selected_export[options] = false;
                                     }
                                 }
                             }
                         }
                     });
-                    $("#cbx-all").on("click", function () {                        
-                        console.log(selected_export);
-                        console.log($('#cbx-all').prop("checked"));
-                        
+                    $("#cbx-all").on("click", function () {                             
                         if($('#cbx-all').prop("checked")) $(".checkbox-wrapper-46 input").prop("checked", 'true');
                         else $(".checkbox-wrapper-46 input").prop("checked", '');
                     });
