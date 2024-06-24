@@ -1,21 +1,20 @@
 // ==UserScript==
 // @name         Botones mecalux
+// @grant        GM_addStyle
 // @namespace    http://tampermonkey.net/
-// @version      1.2
+// @version      1.3
 // @description  botones extra mecalux
 // @author       Jorge Serrano
 // @match        https://*/SmartUI/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=1.193
-// @grant        none
 // @require      https://cdn.jsdelivr.net/npm/sweetalert2@11
-// @unwrap
 // @downloadURL  https://raw.githubusercontent.com/JorgeJimSports/botones-extra-mclx-jsg/main/index.js
 // @updateURL    https://raw.githubusercontent.com/JorgeJimSports/botones-extra-mclx-jsg/main/index.js
 // ==/UserScript==
 
 (function () {
     'use strict';
-    
+
     const moves = [
         { page: "Stock", segundos_espera: 5000, filter: false, history: false },
         { page: 'Ubicaciones', segundos_espera: 5000, filter: false, history: false },
@@ -36,12 +35,13 @@
     let first_result = '';
     let first_result_2 = '';
     let first_result_3 = '';
-    let boton_suma = '<button type="button" class="btn btn-primary jorgesuma botones-jsg" style="background-color:#323232;" title="suma"><img src="https://i.imgur.com/SThtrEf.png" style="width: 18px;"></button>';
-    let boton_tarea_block = '<button type="button" class="btn btn-primary jorgeqty_tarea_block botones-jsg" style="background-color:#323232;" title="qty_check"><img src="https://flaticons.net/icon.php?slug_category=miscellaneous&slug_icon=run&icon_size=256&icon_color=FFFFFF&icon_flip=h&icon_rotate=0" style="width: 18px;"></button>';
-    let boton_qty_check = '<button type="button" class="btn btn-primary jorgeqty_check botones-jsg" style="background-color:#323232;" title="qty_check"><img src="https://www.pngkey.com/png/full/87-872187_lupa-search-icon-white-png.png" style="width: 18px;"></button>';
-    let boton_direccion = '<button type="button" class="btn btn-primary jorgedireccion botones-jsg" style="background-color:#323232;" title="direccion"><img src="https://static-00.iconduck.com/assets.00/address-icon-1620x2048-3s4bnjam.png" style="width: 18px;"></button>';
-    let boton_export = '<li><button type="button" class="btn btn-primary jorgeexportar" title="exportar"><img src="https://flaticons.net/icon.php?slug_category=application&slug_icon=data-export" style="width: 24px;"></button></li>';
-    let checks = ['suma','lineas','tareas','direcciones', 'exportar'];
+    let boton_suma = '<button type="button" class="btn btn-primary jorgesuma botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="suma"><img src="https://i.imgur.com/SThtrEf.png" style="width: 18px;"></button>';
+    let boton_tarea_block = '<button type="button" class="btn btn-primary jorgeqty_tarea_block botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="qty_check"><img src="https://flaticons.net/icon.php?slug_category=miscellaneous&slug_icon=run&icon_size=256&icon_color=FFFFFF&icon_flip=h&icon_rotate=0" style="width: 18px;"></button>';
+    let boton_qty_check = '<button type="button" class="btn btn-primary jorgeqty_check botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="qty_check"><img src="https://www.pngkey.com/png/full/87-872187_lupa-search-icon-white-png.png" style="width: 18px;"></button>';
+    let boton_direccion = '<button type="button" class="btn btn-primary jorgedireccion botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://static-00.iconduck.com/assets.00/address-icon-1620x2048-3s4bnjam.png" style="width: 18px;"></button>';
+    let boton_picking = '<button type="button" class="btn btn-primary jorgepicking botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://static-00.iconduck.com/assets.00/square-box-question-icon-512x512-9nkbld6u.png" style="width: 18px;filter:invert(1);"></button>';
+    let boton_export = ''; //'<li><button type="button" class="btn btn-primary jorgeexportar" title="exportar"><img src="https://flaticons.net/icon.php?slug_category=application&slug_icon=data-export" style="width: 24px;"></button></li>';
+    let checks = ['suma', 'lineas', 'tareas', 'direcciones', 'exportar', 'picking'];
     let values_direccion = {
         nombre: 'contact_name',
         email: 'contact_email',
@@ -54,16 +54,67 @@
         direccion: 'address_addressline',
         complemento: 'address_addressline2'
     };
-    let keysPressed = {};
 
+    let keysPressed = {};
+    let resizable = $('home > app-viewlist').get(0);
+    let resizer = $('#rightDiv').get(0);
+    let startX;
+    let initialLeftWidth;
+    let initialRightWidth;
+    setInterval(function () {
+        resizer = $('#rightDiv').get(0);
+        resizable = $('home > app-viewlist').get(0);
+        $('#rightDiv').css('cursor','auto');
+
+        resizer.addEventListener('mousedown', function(e) {
+            $('#rightDiv').css('cursor','ew-resize');
+            startX = e.clientX;
+            initialLeftWidth = parseFloat(getComputedStyle(resizable).getPropertyValue('--width-left'));
+            initialRightWidth = parseFloat(getComputedStyle(resizable).getPropertyValue('--width-right'));
+
+            document.addEventListener('mousemove', resize);
+            document.addEventListener('mouseup', stopResize);
+        });
+
+        resizer.addEventListener('dblclick', function(e) {
+            $('home > app-viewlist').attr('style','--width-left: 70%; --width-right: 30%;');
+        });
+    }, 1000)
+
+      function resize(e) {
+        const dx = e.clientX - startX;
+        const totalWidth = resizable.offsetWidth;
+
+        let newLeftWidth = initialLeftWidth + (dx / totalWidth) * 100;
+        let newRightWidth = initialRightWidth - (dx / totalWidth) * 100;
+
+        // Asegurarse de que las sumas de los porcentajes sean 100% y no negativos
+        if (newLeftWidth < 0) newLeftWidth = 0;
+        if (newRightWidth < 0) newRightWidth = 0;
+        if (newLeftWidth + newRightWidth > 100) {
+            const overflow = newLeftWidth + newRightWidth - 100;
+            newLeftWidth -= overflow / 2;
+            newRightWidth -= overflow / 2;
+        }
+
+        resizable.style.setProperty('--width-left', newLeftWidth + '%');
+        resizable.style.setProperty('--width-right', newRightWidth + '%');
+    }
+
+    function stopResize() {
+        console.log(document.removeEventListener('mousemove', resize));
+        document.removeEventListener('mouseup', stopResize);
+    }
     /* Intervalo para crear los botones para que aparezcan cada vez que se cambie de pagina */
     setInterval(function () {
         if ($('.botones-jsg').length < 1) {
             ponerBotones();
         }
+        if($('home > app-viewlist').attr('style') == "--width-left: 60%; --width-right: 40%;"){
+            $('home > app-viewlist').attr('style','--width-left: 70%; --width-right: 30%;');
+        }
     }, 3000)
 
-    
     /* Intervalo para eliminar estilos una vez se cambia de dato */
     setInterval(function () {
         if (first_result != $('.columnHeader-OutboundOrderCode').eq(1).text()) {
@@ -95,31 +146,37 @@
                 delete keysPressed[event.key];
             });
             setTimeout(function () {
-                if(getCookie('chck-suma')==='true'){
+                if (getCookie('chck-suma') != 'false') {
                     $('.primary-buttons').append(boton_suma)
                     $(".jorgesuma").on("click", function (event) {
                         checkStock();
                     });
                 }
-                if(getCookie('chck-lineas')==='true'){
+                if (getCookie('chck-lineas') != 'false') {
                     $('.primary-buttons').append(boton_qty_check)
                     $(".jorgeqty_check").on("click", function (event) {
                         check_same_qty();
                     });
                 }
-                if(getCookie('chck-tareas')==='true'){
+                if (getCookie('chck-tareas')!= 'false') {
                     $('.primary-buttons').append(boton_tarea_block)
                     $(".jorgeqty_tarea_block").on("click", function (event) {
                         tarea_block();
                     });
                 }
-                if(getCookie('chck-direcciones')==='true'){
+                if (getCookie('chck-direcciones') != 'false') {
                     $('.primary-buttons').append(boton_direccion)
                     $(".jorgedireccion").on("click", function (event) {
                         check_direccion();
-                    });            
-                }    
-                if(getCookie('chck-exportar')==='true'){
+                    });
+                }
+                if (getCookie('chck-picking') != 'false') {
+                    $('.primary-buttons').append(boton_picking)
+                    $(".jorgepicking").on("click", function (event) {
+                        check_picking();
+                    });
+                }
+                if (getCookie('chck-exportar') != 'false') {
                     if ($('.jorgeexportar').length < 1) {
                         if ($.trim($('.user-submenu').text()) === 'exportar') {
                             setTimeout(function () {
@@ -133,7 +190,13 @@
                 }
             }, 500)
         }, 500)
-    }    
+    }
+
+    function check_picking(){
+        stopResize();
+        toastr.error('Boton desactivado.');
+        return false;
+    }
 
     /**
     *  Muestra en un alert (Sweetalert2) la suma de stock de las lineas mostradas en pantalla.
@@ -160,8 +223,8 @@
     }
 
     /**
-    *  Comprueba las lineas de orden y pinta de verde las que están totalmente preparadas, 
-    *  en blanco las que no lo están y en rojo las que tienen mas cantidad preparada que pedidas.  
+    *  Comprueba las lineas de orden y pinta de verde las que están totalmente preparadas,
+    *  en blanco las que no lo están y en rojo las que tienen mas cantidad preparada que pedidas.
     */
     function check_same_qty() {
         if ($('.header-left > h2').text() === 'Líneas de órdenes de salida') {
@@ -292,7 +355,7 @@
             let textos = {};
             let selectores = {};
 
-            
+
             textos['transportista'] = $('#data\\.deliverycontent\\.carriercode\\.carriercode\\.label').text();
             // Iterar sobre las claves de values
             for (let key in values_direccion) {
@@ -307,53 +370,87 @@
                 textos[key] = texto;
             }
 
-            let movil_error = false; 
-            let tfno_error = false; 
-            $(selectores['movil']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)'); 
-            $(selectores['telefono']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)'); 
+            let movil_error = false;
+            let tfno_error = false;
+            let errors_text = [];
 
+            $(selectores['movil']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
+            $(selectores['telefono']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
             /* Comprobar que los dos campos de telefono/movil están cubiertos */
-            if (textos['movil'].length < 1 || !textos['movil']) movil_error = true;
-            if (textos['telefono'].length < 1 || !textos['telefono']) tfno_error = true;
+            if (textos['movil'].length < 1 || !textos['movil']){
+                movil_error = true;
+                errors_text['movil_error'] = ' - Está vacio';
+            }
+            if (textos['telefono'].length < 1 || !textos['telefono']){
+                tfno_error = true;
+                errors_text['tfno_error'] = ' - Está vacio';
+            }
 
             /* Comprobar que el telefono no es de Portugal y tiene mas de 9 caracteres */
             if (textos['pais'] == 'PT') {
-                if (textos['movil'].length > 9) movil_error = true;
-                if (textos['telefono'].length > 9) tfno_error = true;
+                if (textos['movil'].length > 9){
+                    movil_error = true;
+                    errors_text['movil_error'] = ' - Para Portugal debe estar formado de 9 caracteres maximo (ejemplo: 612612612)';
+                }
+                if (textos['telefono'].length > 9){
+                    tfno_error = true;
+                    errors_text['tfno_error'] = ' - Para Portugal debe estar formado de 9 caracteres maximo (ejemplo: 912612612)';
+                }
             }
 
             if (textos['transportista'].includes('CORREOS')) {
-                if (textos['movil'].replace(/\s/g, '').slice(0,4) == '+349' || textos['movil'].replace(/\s/g, '').slice(0,1) == '9') movil_error = true;
-                if (textos['telefono'].replace(/\s/g, '').slice(0,4) == '+346' || textos['telefono'].replace(/\s/g, '').slice(0,1) == '6') tfno_error = true;
+                if (textos['movil'].replace(/\s/g, '').slice(0, 4) == '+349' || textos['movil'].replace(/\s/g, '').slice(0, 1) == '9'){
+                    movil_error = true;
+                    errors_text['movil_error'] = ' - Debe ser un telefono movil, no puede empezar por 9';
+                }
+                if (textos['telefono'].replace(/\s/g, '').slice(0, 4) == '+346' || textos['telefono'].replace(/\s/g, '').slice(0, 1) == '6'){
+                    tfno_error = true;
+                    errors_text['tfno_error'] = ' - Debe ser un telefono fijo, no puede empezar por 6';
+                }
             }
 
-            if(movil_error) $(selectores['movil']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(255 0 0 / 35%)'); 
-            if(tfno_error) $(selectores['telefono']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(255 0 0 / 35%)'); 
+            if (movil_error){
+                $(selectores['movil']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(255 0 0 / 35%)');
+                $(selectores['movil']).parents('.viewfieldcontent').parent().attr('title', errors_text['movil_error']); 
+            } 
+            if (tfno_error){
+                $(selectores['telefono']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(255 0 0 / 35%)');
+                $(selectores['telefono']).parents('.viewfieldcontent').parent().attr('title', errors_text['tfno_error']); 
+            } 
 
             /* Comprobar que el nombre no tiene '&' */
             if (textos['nombre'].includes('&')) {
                 $(selectores['nombre']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(255 0 0 / 35%)');
+                $(selectores['nombre']).parents('.viewfieldcontent').parent().attr('title', 'El nombre no puede incluir el caracter \'&\''); 
+            }else if (textos['nombre'].length > 60) {
+                $(selectores['nombre']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(255 153 0 / 35%)');
+                $(selectores['nombre']).parents('.viewfieldcontent').parent().attr('title', 'Puede que el nombre sea demasiado largo'); 
+            } else{
+                $(selectores['nombre']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
             }
 
             /* Comprobar que el pais está formado por 2 letras mayusculas */
             if (!check_pais(textos['pais'])) {
                 $(selectores['pais']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(255 0 0 / 35%)');
+                $(selectores['pais']).parents('.viewfieldcontent').parent().attr('title', 'El pais deben ser únicamente 2 letras mayusculas'); 
+            } else {
+                $(selectores['pais']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
             }
-            
+
             // Ejemplo de solicitud AJAX desde otro sitio
-            if (textos['pais'] == 'PT' || textos['pais'] == 'ES' && textos['transportista'] != 'NO_ENVIAR') {
-                let trans = '';
-                if(textos['transportista'].includes('SEUR')){
-                    trans = 'seur';
-                } else if(textos['transportista'].includes('CBL')){
-                    trans = 'cbl';
+            if ((textos['pais'] == 'PT' || textos['pais'] == 'ES') && !(textos['transportista'].includes('ENVIAR'))) {
+                let trans = (textos['transportista'].includes('SEUR')) ? 'seur' : 'cbl';
+                let texttop = '';
+                if(textos['transportista'].includes('SEUR') || textos['transportista'].includes('CBL')) {
+                    texttop = "<strong>No coincide el CP con la ciudad</strong> <br/> Estas son las ciudades aceptables para el codigo postal <b>" + textos['codigopostal'] + "</b>";
+                }else {
+                    texttop = "<strong>Revise si coincide el CP con la ciudad</strong> <br/> Ciudades aceptables para CBL (Aunque este envio sea otro transporte):";
                 }
-                
                 $.ajax({
                     type: 'GET',
                     url: 'https://local.jimsports.dev/mecalux/api.php', // Reemplaza esto con la URL de tu servidor
                     data: {
-                        cp_away: textos['codigopostal'].replace('-',''),
+                        cp_away: textos['codigopostal'].replace('-', ''),
                         trans: trans,
                     },
                     success: function (response) {
@@ -362,10 +459,9 @@
                         var textoMin = textos['ciudad'].toLowerCase();
                         // Convertir el objeto JSON a un array
                         var arrayDatos = JSON.parse(response);
-                        console.log(arrayDatos);
                         // Filtrar los datos para obtener las ciudades que coinciden con el texto
                         arrayDatos.filter(function (item) {
-                            if (item.ciudad.toLowerCase().includes(textoMin)) {
+                            if (item.ciudad.toLowerCase() == textoMin) {
                                 isSame = true;
                             }
                         });
@@ -375,37 +471,39 @@
                             let tablehtml = '<tbody>';
                             for (let dato of arrayDatos) {
                                 tablehtml += '<tr>';
-                                tablehtml += '<td style="padding-bottom: 1rem;padding-top: 1rem;">'+dato.cp+'</td>';
-                                tablehtml += '<td style="padding-bottom: 1rem;padding-top: 1rem;">'+dato.ciudad+'</td>';
-                                if(textos['transportista'].includes('CBL')) tablehtml += '<td style="padding-bottom: 1rem;padding-top: 1rem;">'+dato.provincia+'</td>';
+                                tablehtml += '<td style="padding-bottom: 1rem;padding-top: 1rem;">' + dato.cp + '</td>';
+                                tablehtml += '<td style="padding-bottom: 1rem;padding-top: 1rem;">' + dato.ciudad + '</td>';
+                                if (textos['transportista'].includes('CBL')) tablehtml += '<td style="padding-bottom: 1rem;padding-top: 1rem;">' + dato.provincia + '</td>';
                                 tablehtml += '</tr>';
                             }
                             tablehtml += '</tbody>';
 
                             let theadhtml = '<th style="text-align: center;padding-bottom: 0.5rem;padding-top: 0.5rem;">CP</th>';
                             theadhtml += '<th style="text-align: center;padding-bottom: 0.5rem;padding-top: 0.5rem;">Ciudad</th>';
-                            if(textos['transportista'].includes('CBL')) theadhtml += '<th style="text-align: center;padding-bottom: 0.5rem;padding-top: 0.5rem;">Provincia</th>';
+                            if (textos['transportista'].includes('CBL')) theadhtml += '<th style="text-align: center;padding-bottom: 0.5rem;padding-top: 0.5rem;">Provincia</th>';
                             Swal.fire({
                                 width: 800,
-                                title: "<strong>No coincide el CP con la ciudad</strong> <br/> Estas son las ciudades aceptables para el codigo postal <b>"+textos['codigopostal']+"</b>",
+                                heightAuto: false,
+                                title: texttop,
                                 icon: "error",
                                 html: `
                                 <table id="table" border=1 style="width:100%;">
                                     <thead>
                                         <tr>
-                                            `+theadhtml+`
+                                            `+ theadhtml + `
                                         </tr>
                                     </thead>
-                                    `+tablehtml+`
+                                    `+ tablehtml + `
                                 </table>
                                 `,
                                 showCloseButton: true,
                             });
+                            $('.swal2-popup').animate({ scrollTop: 0 }, "slow");
                         } else {
                             $(selectores['ciudad']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
                             $(selectores['codigopostal']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
                         }
-                        
+
                     },
                     error: function (error) {
                         console.error('Error en la solicitud AJAX:', error);
@@ -423,9 +521,9 @@
         if (keysPressed['Control'] && event.key == 'ñ') {
             let texthtml = '';
             for (const key of checks) {
-                let cookie = (getCookie('chck-'+key)==='true') ? 'checked' : '';
-                texthtml += '<label>Boton '+key+'</label>';
-                texthtml += '<input type="checkbox" class="checkbox" id="chck-'+key+'" style="margin-bottom:2rem;" '+cookie+'>';
+                let cookie = (getCookie('chck-' + key) === 'true') ? 'checked' : '';
+                texthtml += '<label>Boton ' + key + '</label>';
+                texthtml += '<input type="checkbox" class="checkbox" id="chck-' + key + '" style="margin-bottom:2rem;" ' + cookie + '>';
             }
 
             const { value: formValues } = await Swal.fire({
@@ -435,7 +533,7 @@
                 preConfirm: () => {
                     let data_return = [];
                     for (const key of checks) {
-                        data_return.push(document.getElementById("chck-"+key).checked);
+                        data_return.push(document.getElementById("chck-" + key).checked);
                     }
                     return data_return;
                 }
@@ -443,7 +541,7 @@
             if (formValues) {
                 let i = 0;
                 for (const key of checks) {
-                    setCookie('chck-'+key,formValues[i++],360);
+                    setCookie('chck-' + key, formValues[i++], 360);
                 }
             }
         }
@@ -454,7 +552,6 @@
     */
     function check_pais(cadena) {
         var expresionRegular = /^[A-Z]{2}$/; // Coincide con exactamente dos letras mayúsculas
-    
         return expresionRegular.test(cadena);
     }
 
@@ -466,7 +563,6 @@
         for (let key in values_direccion) {
             // Construir el selector jQuery
             let selector = '#receiver\\.deliverycontent\\.consignee' + values_direccion[key] + '\\.' + values_direccion[key].split('_')[1] + '\\.textbox';
-
             // Eliminar estilos
             $(selector).parents('.viewfieldcontent').parent().removeAttr('style');
         }
@@ -482,20 +578,20 @@
     function setCookie(cname, cvalue, exdays) {
         const d = new Date();
         d.setTime(d.getTime() + (exdays * 24 * 60 * 60 * 1000));
-        let expires = "expires="+d.toUTCString();
+        let expires = "expires=" + d.toUTCString();
         document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
     }
 
     /**
     * Devuelve el valor de una cookie.
-    * 
-    * @param {string} cname El nombre de la cookie. 
+    *
+    * @param {string} cname El nombre de la cookie.
     * @return {string} Valor de la cookie.
     */
     function getCookie(cname) {
         let name = cname + "=";
         let ca = document.cookie.split(';');
-        for(let i = 0; i < ca.length; i++) {
+        for (let i = 0; i < ca.length; i++) {
             let c = ca[i];
             while (c.charAt(0) == ' ') {
                 c = c.substring(1);
@@ -506,4 +602,12 @@
         }
         return "";
     }
+    setTimeout(() => {
+        GM_addStyle ( `
+    .swal2-popup {
+            overflow-y: auto;
+    max-height: 500px;
+    }
+` );
+    }, 1000);
 })();
