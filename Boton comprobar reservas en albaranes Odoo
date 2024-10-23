@@ -1,0 +1,63 @@
+// ==UserScript==
+// @name         Boton comprobar reservas en albaranes Odoo
+// @namespace    http://tampermonkey.net/
+// @version      0.1
+// @description  try to take over the world!
+// @author       JorgeSerra
+// @match        https://erp.odoojim.net/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=odoojim.net
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict'
+    setInterval(function() {
+        if($('#ckc_rsv').length <= 0 && $('.breadcrumb-item.o_back_button').length > 0 && $('.breadcrumb-item.o_back_button').text() == 'Operaciones de existencias' && $('[name="reserved_qty_to_qty_done"]').length > 0 ){
+            $('.oe_right').append('<button type="button" class="btn btn-link" id="ckc_rsv" name="check_reserv" data-original-title="" title=""><i class="fa fa-fw o_button_icon fa-magnet mr-1"></i><span>Comprobar reservas</span></button>');
+            let trs = $('.o_list_table.o_list_table_ungrouped tbody.ui-sortable:visible tr');
+            $( "#ckc_rsv" ).on( "click", function() {
+                let ps = obtenerPosicionColumnas();
+                let idx_dmn = ps.demanda;
+                let idx_res = ps.reservado;
+                let count=0;
+                for(let tr of trs){
+                    let tds = $(tr).find('td');
+                    if($(tds[idx_dmn]).text() > $(tds[idx_res]).find('span').text()){
+                        count++;
+                        $(tr).css('background','#ff7373');
+                    }
+                }
+                if(count == 0){
+                    alert('Reservas correctas.')
+                }else {
+                    alert('Hay '+count+" reserva/s que no coinciden con la demanda.")
+                }
+            } );
+        }
+    },500);
+
+
+    function obtenerPosicionColumnas() {
+        // Selecciona todos los elementos <th> dentro del <tr>
+        const columnas = $('.o_list_table.o_list_table_ungrouped thead:visible th');
+
+        let posicionDemanda = -1;
+        let posicionReservado = -1;
+
+        // Itera sobre los elementos <th> para buscar "Demanda" y "Reservado"
+        let index = 0
+        for(let columna of columnas){
+            if ($(columna).text().trim() === 'Demanda') {
+                posicionDemanda = index;
+            }
+            if ($(columna).text().trim() === 'Reservado') {
+                posicionReservado = index++;
+            }
+        };
+
+        return {
+            demanda: posicionDemanda,
+            reservado: posicionReservado
+        };
+    }
+})();
