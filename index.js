@@ -14,7 +14,6 @@
 
 (function () {
     'use strict';
-
     const moves = [
         { page: "Stock", segundos_espera: 5000, filter: false, history: false },
         { page: 'Ubicaciones', segundos_espera: 5000, filter: false, history: false },
@@ -39,7 +38,7 @@
     let boton_tarea_block = '<button type="button" class="btn btn-primary jorgeqty_tarea_block botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="qty_check"><img src="https://flaticons.net/icon.php?slug_category=miscellaneous&slug_icon=run&icon_size=256&icon_color=FFFFFF&icon_flip=h&icon_rotate=0" style="width: 18px;"></button>';
     let boton_qty_check = '<button type="button" class="btn btn-primary jorgeqty_check botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="qty_check"><img src="https://www.pngkey.com/png/full/87-872187_lupa-search-icon-white-png.png" style="width: 18px;"></button>';
     let boton_direccion = '<button type="button" class="btn btn-primary jorgedireccion botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://static-00.iconduck.com/assets.00/address-icon-1620x2048-3s4bnjam.png" style="width: 18px;"></button>';
-    let boton_picking = '<button type="button" class="btn btn-primary jorgepicking botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://static-00.iconduck.com/assets.00/square-box-question-icon-512x512-9nkbld6u.png" style="width: 18px;filter:invert(1);"></button>';
+    let boton_picking = '<button type="button" class="btn btn-primary jorgepicking botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://cdn-icons-png.flaticon.com/512/660/660376.png" style="width: 18px;filter:invert(1);"></button>';
     let boton_export = ''; //'<li><button type="button" class="btn btn-primary jorgeexportar" title="exportar"><img src="https://flaticons.net/icon.php?slug_category=application&slug_icon=data-export" style="width: 24px;"></button></li>';
     let checks = ['suma', 'lineas', 'tareas', 'direcciones', 'exportar', 'picking'];
     let values_direccion = {
@@ -65,20 +64,21 @@
         resizer = $('#rightDiv').get(0);
         resizable = $('home > app-viewlist').get(0);
         $('#rightDiv').css('cursor','auto');
+        if(resizer){
+            resizer.addEventListener('mousedown', function(e) {
+                $('#rightDiv').css('cursor','ew-resize');
+                startX = e.clientX;
+                initialLeftWidth = parseFloat(getComputedStyle(resizable).getPropertyValue('--width-left'));
+                initialRightWidth = parseFloat(getComputedStyle(resizable).getPropertyValue('--width-right'));
 
-        resizer.addEventListener('mousedown', function(e) {
-            $('#rightDiv').css('cursor','ew-resize');
-            startX = e.clientX;
-            initialLeftWidth = parseFloat(getComputedStyle(resizable).getPropertyValue('--width-left'));
-            initialRightWidth = parseFloat(getComputedStyle(resizable).getPropertyValue('--width-right'));
+                document.addEventListener('mousemove', resize);
+                document.addEventListener('mouseup', stopResize);
+            });
 
-            document.addEventListener('mousemove', resize);
-            document.addEventListener('mouseup', stopResize);
-        });
-
-        resizer.addEventListener('dblclick', function(e) {
-            $('home > app-viewlist').attr('style','--width-left: 70%; --width-right: 30%;');
-        });
+            resizer.addEventListener('dblclick', function(e) {
+                $('home > app-viewlist').attr('style','--width-left: 70%; --width-right: 30%;');
+            });
+        }
     }, 1000)
 
       function resize(e) {
@@ -102,7 +102,7 @@
     }
 
     function stopResize() {
-        console.log(document.removeEventListener('mousemove', resize));
+        document.removeEventListener('mousemove', resize);
         document.removeEventListener('mouseup', stopResize);
     }
     /* Intervalo para crear los botones para que aparezcan cada vez que se cambie de pagina */
@@ -112,6 +112,22 @@
         }
         if($('home > app-viewlist').attr('style') == "--width-left: 60%; --width-right: 40%;"){
             $('home > app-viewlist').attr('style','--width-left: 70%; --width-right: 30%;');
+        }
+
+        /* Convertir los valores del campo "Orden de agrupación" en un link, en "Ordenes de salida" */
+        if($('.header-left h2').text() == "Órdenes de salida"){
+            let agrupaciones = $('td.columnHeader-OutboundOrderGroupMasterCode');
+            if(agrupaciones.length == 1){
+                for(let agrupacion of agrupaciones){
+                    let orden = $(agrupacion).text().replace(/ /g,'');
+                    let valor_ag = $(agrupacion).find('div.None').attr('data-value');
+                    if(valor_ag == ''){
+                        $(agrupacion).find('div.None').html('');
+                    }else if(orden != '' && $(agrupacion).find('.jg-14').text() != valor_ag){
+                        $(agrupacion).find('div.None').html('<a class="jg-14" target="_blank" href="https://192.168.1.193/SmartUI/smartui?viewname=EasyWMS%7COutboundOrderVList&viewtype=ViewList&selectedKey=code&selectedValue='+valor_ag+'&History=false&readonly=true&identifier=a3196b2e-282d-9221-a9a5-318099c6760a">'+valor_ag+'</a> <a target="_blank" href="https://192.168.1.193/SmartUI/smartui?viewname=EasyWMS%7COutboundOrderLineVList&viewtype=ViewList&selectedKey=OutboundOrderCode&selectedValue='+valor_ag+'&History=false&modeEdit=false&modeNew=false&autoselected=true&identifier=a49352e7-2c14-f195-f0f1-d6bdfda52fb5"> l </a>');
+                    }
+                }
+            }
         }
     }, 3000)
 
@@ -173,7 +189,7 @@
                 if (getCookie('chck-picking') != 'false') {
                     $('.primary-buttons').append(boton_picking)
                     $(".jorgepicking").on("click", function (event) {
-                        check_picking();
+                        change_menu();
                     });
                 }
                 if (getCookie('chck-exportar') != 'false') {
@@ -192,10 +208,22 @@
         }, 500)
     }
 
-    function check_picking(){
-        stopResize();
-        toastr.error('Boton desactivado.');
-        return false;
+    /**
+    *  Cambia el menú para que esté siempre visible en la parte superior.
+    */
+    let inter;
+    function change_menu(){
+        if(!$('.menu-body').attr('jota')){
+            $('.menu > a').hide();
+            $('.menu-body').css('opacity','1').css('visibility','visible').attr('jota','yes').css('display','flex');
+            inter = setInterval(() => {
+                $('.menu-body').css('display','flex');
+            }, 500);
+        } else {
+            clearInterval(inter);
+            $('.menu > a').show();
+            $('.menu-body').attr('style','').removeAttr('jota');
+        }
     }
 
     /**
@@ -219,7 +247,7 @@
                 sum = sum + cant;
             }
         }
-        Swal.fire(String(sum));
+        Swal.fire("Suma del stock visible: <br/>"+String(sum));
     }
 
     /**
@@ -267,7 +295,6 @@
     function tarea_block() {
         $('.k-master-row').css('background-color', '');
         if ($('.header-left > h2').text() === 'Tareas') {
-            console.log('test');
             let fechas = $('.columnHeader-InternalInfo_UpdateDate .None');
 
 
@@ -354,7 +381,6 @@
             // Objeto para almacenar los textos
             let textos = {};
             let selectores = {};
-
 
             textos['transportista'] = $('#data\\.deliverycontent\\.carriercode\\.carriercode\\.label').text();
             // Iterar sobre las claves de values
@@ -503,7 +529,6 @@
                             $(selectores['ciudad']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
                             $(selectores['codigopostal']).parents('.viewfieldcontent').parent().css('background-color', 'rgb(16 255 0 / 35%)');
                         }
-
                     },
                     error: function (error) {
                         console.error('Error en la solicitud AJAX:', error);
@@ -570,7 +595,7 @@
 
     /**
     * Crea una cookie.
-    * 
+    *
     * @param {string} cname El nombre de la cookie.
     * @param {string} cvalue El valor de la cookie.
     * @param {number} exdays El numero de días que va a estar activa la cookie.
