@@ -82,23 +82,26 @@
     }, 1000)
 
       function resize(e) {
-        const dx = e.clientX - startX;
-        const totalWidth = resizable.offsetWidth;
+        console.log(getCookie('chck-movesc'));
+        if (getCookie('chck-movesc') != 'false') {
+            const dx = e.clientX - startX;
+            const totalWidth = resizable.offsetWidth;
 
-        let newLeftWidth = initialLeftWidth + (dx / totalWidth) * 100;
-        let newRightWidth = initialRightWidth - (dx / totalWidth) * 100;
+            let newLeftWidth = initialLeftWidth + (dx / totalWidth) * 100;
+            let newRightWidth = initialRightWidth - (dx / totalWidth) * 100;
 
-        // Asegurarse de que las sumas de los porcentajes sean 100% y no negativos
-        if (newLeftWidth < 0) newLeftWidth = 0;
-        if (newRightWidth < 0) newRightWidth = 0;
-        if (newLeftWidth + newRightWidth > 100) {
-            const overflow = newLeftWidth + newRightWidth - 100;
-            newLeftWidth -= overflow / 2;
-            newRightWidth -= overflow / 2;
+            // Asegurarse de que las sumas de los porcentajes sean 100% y no negativos
+            if (newLeftWidth < 0) newLeftWidth = 0;
+            if (newRightWidth < 0) newRightWidth = 0;
+            if (newLeftWidth + newRightWidth > 100) {
+                const overflow = newLeftWidth + newRightWidth - 100;
+                newLeftWidth -= overflow / 2;
+                newRightWidth -= overflow / 2;
+            }
+
+            resizable.style.setProperty('--width-left', newLeftWidth + '%');
+            resizable.style.setProperty('--width-right', newRightWidth + '%');
         }
-
-        resizable.style.setProperty('--width-left', newLeftWidth + '%');
-        resizable.style.setProperty('--width-right', newRightWidth + '%');
     }
 
     function stopResize() {
@@ -189,7 +192,7 @@
                 if (getCookie('chck-picking') != 'false') {
                     $('.primary-buttons').append(boton_picking)
                     $(".jorgepicking").on("click", function (event) {
-                        change_menu();
+                        //change_menu();
                     });
                 }
                 if (getCookie('chck-exportar') != 'false') {
@@ -550,6 +553,9 @@
                 texthtml += '<label>Boton ' + key + '</label>';
                 texthtml += '<input type="checkbox" class="checkbox" id="chck-' + key + '" style="margin-bottom:2rem;" ' + cookie + '>';
             }
+            let cookie = (getCookie('chck-movesc') === 'true') ? 'checked' : '';
+            texthtml += '<label>Ajustar lateral</label>';
+            texthtml += '<input type="checkbox" class="checkbox" id="chck-movesc" style="margin-bottom:2rem;" ' + cookie + '>';
 
             const { value: formValues } = await Swal.fire({
                 title: "Configuracion de botones",
@@ -560,6 +566,7 @@
                     for (const key of checks) {
                         data_return.push(document.getElementById("chck-" + key).checked);
                     }
+                    data_return.push(document.getElementById("chck-movesc").checked);
                     return data_return;
                 }
             });
@@ -568,6 +575,7 @@
                 for (const key of checks) {
                     setCookie('chck-' + key, formValues[i++], 360);
                 }
+                setCookie('chck-movesc', formValues[i++], 360);
             }
         }
     }
