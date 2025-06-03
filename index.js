@@ -37,8 +37,9 @@
     let boton_suma = '<button type="button" class="btn btn-primary jorgesuma botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="suma"><img src="https://i.imgur.com/SThtrEf.png" style="width: 18px;"></button>';
     let boton_tarea_block = '<button type="button" class="btn btn-primary jorgeqty_tarea_block botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="qty_check"><img src="https://flaticons.net/icon.php?slug_category=miscellaneous&slug_icon=run&icon_size=256&icon_color=FFFFFF&icon_flip=h&icon_rotate=0" style="width: 18px;"></button>';
     let boton_qty_check = '<button type="button" class="btn btn-primary jorgeqty_check botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="qty_check"><img src="https://www.pngkey.com/png/full/87-872187_lupa-search-icon-white-png.png" style="width: 18px;"></button>';
-    let boton_direccion = '<button type="button" class="btn btn-primary jorgedireccion botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://static-00.iconduck.com/assets.00/address-icon-1620x2048-3s4bnjam.png" style="width: 18px;"></button>';
-    let boton_picking = '<button type="button" class="btn btn-primary jorgepicking botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://cdn-icons-png.flaticon.com/512/660/660376.png" style="width: 18px;filter:invert(1);"></button>';
+    let boton_direccion = '<button type="button" class="btn btn-primary jorgedireccion botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><svg xmlns="http://www.w3.org/2000/svg" version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="18" height="18" x="0" y="0" viewBox="0 0 512 512" style="enable-background:new 0 0 512 512" xml:space="preserve" class=""><g><g data-name="01-home"><path d="M256 4C147.925 4 60 91.925 60 200c0 52.5 31.807 119.92 94.537 200.378a1065.816 1065.816 0 0 0 93.169 104.294 12 12 0 0 0 16.588 0 1065.816 1065.816 0 0 0 93.169-104.294C420.193 319.92 452 252.5 452 200 452 91.925 364.075 4 256 4zm0 336c-77.2 0-140-62.8-140-140S178.8 60 256 60s140 62.8 140 140-62.8 140-140 140z" fill="#ffffff" opacity="1" data-original="#000000" class=""></path><path d="m352.072 183.121-88-80a12 12 0 0 0-16.144 0l-88 80a12.006 12.006 0 0 0-2.23 15.039 12.331 12.331 0 0 0 10.66 5.84H180v76a12 12 0 0 0 12 12h28a12 12 0 0 0 12-12v-44a12 12 0 0 1 12-12h24a12 12 0 0 1 12 12v44a12 12 0 0 0 12 12h28a12 12 0 0 0 12-12v-76h11.642a12.331 12.331 0 0 0 10.66-5.84 12.006 12.006 0 0 0-2.23-15.039z" fill="#ffffff" opacity="1" data-original="#000000" class=""></path></g></g></svg></button>';
+    let boton_filter_multiple = '<button type="button" class="btn btn-primary jorgemultiple botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><svg xmlns="http://www.w3.org/2000/svg" id="mdi-filter-multiple" viewBox="0 0 24 24"><path fill="#ffffff" d="M3.46 5C3.25 5 3.04 5.08 2.87 5.21C2.43 5.55 2.35 6.18 2.69 6.61L2.69 6.62L8 13.42V19.41L10.29 21.71C10.68 22.1 11.32 22.1 11.71 21.71C12.1 21.32 12.1 20.68 11.71 20.29L10 18.59V12.73L4.27 5.39C4.08 5.14 3.78 5 3.46 5M16 12V19.88C16.04 20.18 15.94 20.5 15.71 20.71C15.32 21.1 14.69 21.1 14.3 20.71L12.29 18.7C12.06 18.47 11.96 18.16 12 17.87V12H11.97L6.21 4.62C5.87 4.19 5.95 3.56 6.38 3.22C6.57 3.08 6.78 3 7 3H21C21.22 3 21.43 3.08 21.62 3.22C22.05 3.56 22.13 4.19 21.79 4.62L16.03 12H16Z"/></svg></button>';
+    let boton_picking = '';// '<button type="button" class="btn btn-primary jorgepicking botones-jsg" style="background-color:#323232;width:29px;height:30px;" title="direccion"><img src="https://cdn-icons-png.flaticon.com/512/660/660376.png" style="width: 18px;filter:invert(1);"></button>';
     let boton_export = ''; //'<li><button type="button" class="btn btn-primary jorgeexportar" title="exportar"><img src="https://flaticons.net/icon.php?slug_category=application&slug_icon=data-export" style="width: 24px;"></button></li>';
     let checks = ['suma', 'lineas', 'tareas', 'direcciones', 'exportar', 'picking'];
     let values_direccion = {
@@ -55,7 +56,7 @@
     };
 
     let keysPressed = {};
-    let resizable = $('home > app-viewlist').get(0);
+    let resizable = null;
     let resizer = $('#rightDiv').get(0);
     let startX;
     let initialLeftWidth;
@@ -127,7 +128,7 @@
                     if(valor_ag == ''){
                         $(agrupacion).find('div.None').html('');
                     }else if(orden != '' && $(agrupacion).find('.jg-14').text() != valor_ag){
-                        $(agrupacion).find('div.None').html('<a class="jg-14" target="_blank" href="https://192.168.1.193/SmartUI/smartui?viewname=EasyWMS%7COutboundOrderVList&viewtype=ViewList&selectedKey=code&selectedValue='+valor_ag+'&History=false&readonly=true&identifier=a3196b2e-282d-9221-a9a5-318099c6760a">'+valor_ag+'</a> <a target="_blank" href="https://192.168.1.193/SmartUI/smartui?viewname=EasyWMS%7COutboundOrderLineVList&viewtype=ViewList&selectedKey=OutboundOrderCode&selectedValue='+valor_ag+'&History=false&modeEdit=false&modeNew=false&autoselected=true&identifier=a49352e7-2c14-f195-f0f1-d6bdfda52fb5"> l </a>');
+                        $(agrupacion).find('div.None').html('<a class="jg-14" target="_blank" href="https://mecalux.jimsports.local/SmartUI/smartui?viewname=EasyWMS%7COutboundOrderVList&viewtype=ViewList&selectedKey=code&selectedValue='+valor_ag+'&History=false&readonly=true&identifier=a3196b2e-282d-9221-a9a5-318099c6760a">'+valor_ag+'</a> <a target="_blank" href="https://mecalux.jimsports.local/SmartUI/smartui?viewname=EasyWMS%7COutboundOrderLineVList&viewtype=ViewList&selectedKey=OutboundOrderCode&selectedValue='+valor_ag+'&History=false&modeEdit=false&modeNew=false&autoselected=true&identifier=a49352e7-2c14-f195-f0f1-d6bdfda52fb5"> l </a>');
                     }
                 }
             }
@@ -187,6 +188,12 @@
                     $('.primary-buttons').append(boton_direccion)
                     $(".jorgedireccion").on("click", function (event) {
                         check_direccion();
+                    });
+                }
+                if (getCookie('chck-multiple') != 'false') {
+                    $('.primary-buttons').append(boton_filter_multiple)
+                    $(".jorgemultiple").on("click", function (event) {
+                        filter_multiple();
                     });
                 }
                 if (getCookie('chck-picking') != 'false') {
@@ -539,6 +546,102 @@
                 });
             }
         }
+    }
+
+    async function filter_multiple(){
+        let out = 1000;
+        const event = new MouseEvent('click', {
+            bubbles: true,
+            cancelable: true
+        });
+        let titulos = []
+        $('th.k-grid-draggable-header').each(function() {
+            titulos.push($(this).text().trim());
+        });
+        let selecthtml = '<label for="type_multiple">Columna</label><select id="type_multiple">';
+        titulos.forEach(element => {
+            selecthtml += '<option>'+element+'</option>';
+        });
+        selecthtml += '</select>';
+        const { value: formValues } = await Swal.fire({
+                title: "Filtro multiple",
+                icon: "info",
+                html:`
+                <div>
+                    ${selecthtml}
+                    <label for="value_multiple">Valores</label>
+                    <textarea class="dx-texteditor-input" id="value_multiple"></textarea>
+                </div>
+                `,
+                focusConfirm: false,
+                preConfirm: () => {
+                    let data_return = [];
+                    data_return['value_multiple'] = $('#value_multiple').val();
+                    data_return['type_multiple'] = $('#type_multiple').val();
+                    return data_return;
+                }
+            });
+            if (formValues) {
+                let values = formValues['value_multiple'].split("\n"); 
+                let i = 0;
+                const speed = 300;
+                    setTimeout(function () {
+                        $('.createFilterLink')[0].dispatchEvent(event);
+                        setTimeout(function () {
+                           $('.filtercontrolpanel .dx-texteditor-input').click();
+                            setTimeout(function () {
+                                $('.dx-item.dx-list-item').eq(1).click();
+                                for(let val of values){
+                                    setTimeout(function () {
+                                        $(".filtercontrolpanel .groupheader button.btn").click();
+                                        setTimeout(function () {
+                                            $(".filtercontrolpanel .singlerow").eq(i).find('.dx-texteditor-input').eq(0).click();
+                                            setTimeout(function () {
+                                                $(".dx-popup-normal:visible .dx-item").filter(function () {
+                                                    return $(this).text().trim() === formValues['type_multiple'];
+                                                }).click();
+                                                setTimeout(function () {
+                                                    $(".filtercontrolpanel .singlerow").eq(i).find('.dx-texteditor-input').eq(1).click();
+                                                    setTimeout(function () {
+                                                        $(".dx-popup-normal:visible .dx-item").filter(function () {
+                                                            return $(this).text().trim() === "=";
+                                                        }).click();
+                                                        setTimeout(function () {
+                                                            setInputValueLikeUser($(".filtercontrolpanel .singlerow").eq(i++).find('.dx-texteditor-input').eq(2)[0],val);
+                                                        }, speed);
+                                                    }, speed);
+                                                }, speed);
+                                            }, speed);
+                                        }, speed);
+                                    }, out);
+                                    out = out + 3500;
+                                }
+                            }, speed);
+                        }, speed);
+                    }, speed);
+                console.log(formValues);
+            }
+    }
+
+    function setInputValueLikeUser(inputEl, value) {
+        if (!(inputEl instanceof HTMLInputElement)) {
+        console.error('El elemento no es un input HTML válido.');
+        return;
+    }
+
+  const valueSetter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
+
+  if (!valueSetter) {
+    console.error('No se pudo obtener el setter nativo del input.');
+    return;
+  }
+
+  // Usa el setter correctamente con el contexto adecuado
+  valueSetter.call(inputEl, value);
+
+  // Dispara eventos reales para que Angular/DevExtreme reaccionen
+  inputEl.dispatchEvent(new Event('input', { bubbles: true }));
+  inputEl.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     /**
